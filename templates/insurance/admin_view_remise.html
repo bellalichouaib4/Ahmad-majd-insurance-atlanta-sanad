@@ -1,0 +1,83 @@
+{% extends 'insurance/adminbase.html' %}
+{% block content %}
+<style>
+.page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.page-title { font-size:18px; font-weight:700; color:#28251d; }
+.btn-add { background:#01696f; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:13px; font-weight:600; text-decoration:none; }
+.btn-add:hover { background:#0c4e54; color:#fff; }
+.table-card { background:#fff; border-radius:12px; border:1px solid #dcd9d5; overflow:hidden; }
+table { width:100%; border-collapse:collapse; }
+thead th { background:#f7f6f2; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#7a7974; padding:12px 14px; border-bottom:1px solid #dcd9d5; }
+tbody td { padding:11px 14px; font-size:13px; border-bottom:1px solid #f3f0ec; vertical-align:middle; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover { background:#f9f8f5; }
+.badge { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; }
+.badge-ok { background:#d4dfcc; color:#1e3f0a; }
+.badge-attente { background:#e9e0c6; color:#8a5b00; }
+.badge-partiel { background:#c6d8e4; color:#0b3751; }
+.summary-bar { display:flex; gap:16px; margin-bottom:20px; }
+.summary-item { background:#fff; border:1px solid #dcd9d5; border-radius:10px; padding:14px 20px; flex:1; }
+.summary-item .label { font-size:11px; color:#7a7974; text-transform:uppercase; letter-spacing:0.8px; }
+.summary-item .value { font-size:22px; font-weight:700; color:#28251d; }
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Remises → Atlanta Sanad</div>
+    <small style="color:#7a7974;">Suivi des reversements à la compagnie</small>
+  </div>
+  <a href="/admin-add-remise" class="btn-add"><i class="fas fa-file-invoice-dollar"></i> Nouvelle Remise</a>
+</div>
+
+<div class="summary-bar">
+  <div class="summary-item">
+    <div class="label">Total Remises</div>
+    <div class="value">{{ remises|length }}</div>
+  </div>
+  <div class="summary-item">
+    <div class="label">En Attente</div>
+    <div class="value" style="color:#8a5b00;">{{ remises|length }}</div>
+  </div>
+</div>
+
+<div class="table-card">
+  <table>
+    <thead>
+      <tr>
+        <th>N° Remise</th>
+        <th>Date</th>
+        <th>Dossiers Inclus</th>
+        <th>Montant Total (MAD)</th>
+        <th>Statut</th>
+        <th>Créé par</th>
+        <th>Observation</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in remises %}
+      <tr>
+        <td><strong>#{{ r.id }}</strong></td>
+        <td><small>{{ r.date_remise }}</small></td>
+        <td>
+          {% for d in r.dossiers.all %}
+            <span style="font-size:11px; background:#f3f0ec; padding:1px 6px; border-radius:4px; margin:1px; display:inline-block;">{{ d.numero_dossier }}</span>
+          {% endfor %}
+        </td>
+        <td><strong>{{ r.montant_total }}</strong></td>
+        <td>
+          {% if r.status == 'Remis' %}<span class="badge badge-ok">✔ Remis</span>
+          {% elif r.status == 'Partiel' %}<span class="badge badge-partiel">Partiel</span>
+          {% else %}<span class="badge badge-attente">En attente</span>{% endif %}
+        </td>
+        <td><small>{{ r.created_by }}</small></td>
+        <td><small style="color:#7a7974;">{{ r.observation }}</small></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center; padding:40px; color:#7a7974;">
+        Aucune remise créée. <a href="/admin-add-remise" style="color:#01696f;">Créer la première remise</a>
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}

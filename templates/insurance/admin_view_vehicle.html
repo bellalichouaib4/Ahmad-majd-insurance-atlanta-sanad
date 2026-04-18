@@ -1,0 +1,52 @@
+{% extends 'insurance/adminbase.html' %}
+{% block content %}
+<style>
+.page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.page-title { font-size:18px; font-weight:700; color:#28251d; }
+.btn-add { background:#01696f; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:13px; font-weight:600; text-decoration:none; }
+.btn-add:hover { background:#0c4e54; color:#fff; }
+.table-card { background:#fff; border-radius:12px; border:1px solid #dcd9d5; overflow:hidden; }
+table { width:100%; border-collapse:collapse; }
+thead th { background:#f7f6f2; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#7a7974; padding:12px 14px; border-bottom:1px solid #dcd9d5; }
+tbody td { padding:11px 14px; font-size:13px; border-bottom:1px solid #f3f0ec; vertical-align:middle; }
+tbody tr:last-child td { border-bottom:none; }
+tbody tr:hover { background:#f9f8f5; }
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Véhicules Assurés</div>
+    <small style="color:#7a7974;">{{ vehicles|length }} véhicule(s) enregistré(s)</small>
+  </div>
+  <a href="/admin-add-vehicle" class="btn-add"><i class="fas fa-plus"></i> Ajouter Véhicule</a>
+</div>
+
+<div class="table-card">
+  <table>
+    <thead>
+      <tr>
+        <th>Marque</th>
+        <th>Modèle</th>
+        <th>Immatriculation</th>
+        <th>Année</th>
+        <th>Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in vehicles %}
+      <tr>
+        <td><strong>{{ v.marque }}</strong></td>
+        <td>{{ v.modele }}</td>
+        <td><span style="font-family:monospace; background:#f3f0ec; padding:2px 8px; border-radius:4px;">{{ v.immatriculation }}</span></td>
+        <td>{{ v.annee }}</td>
+        <td>{{ v.type_vehicule }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center; padding:40px; color:#7a7974;">
+        Aucun véhicule enregistré. <a href="/admin-add-vehicle" style="color:#01696f;">Ajouter le premier</a>
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}

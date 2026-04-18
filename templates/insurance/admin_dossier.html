@@ -1,0 +1,39 @@
+{% extends 'insurance/adminbase.html' %}
+{% block content %}
+<style>
+.menu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; max-width:800px; margin:40px auto; }
+.menu-card { background:#fff; border:1px solid #dcd9d5; border-radius:12px; padding:28px 24px; text-align:center; text-decoration:none; color:#28251d; transition:box-shadow 0.2s, transform 0.2s; }
+.menu-card:hover { box-shadow:0 8px 24px rgba(0,0,0,0.1); transform:translateY(-2px); color:#01696f; }
+.menu-card i { font-size:28px; color:#01696f; margin-bottom:12px; }
+.menu-card h5 { font-size:14px; font-weight:700; margin:0 0 4px; }
+.menu-card p { font-size:12px; color:#7a7974; margin:0; }
+.page-title { text-align:center; font-size:20px; font-weight:700; margin-bottom:8px; }
+.page-sub { text-align:center; font-size:13px; color:#7a7974; margin-bottom:32px; }
+</style>
+
+<div class="page-title">Gestion des Dossiers</div>
+<div class="page-sub">Atlanta Sanad — Bureau Direct</div>
+
+<div class="menu-grid">
+  <a href="/admin-add-dossier" class="menu-card">
+    <i class="fas fa-plus-circle"></i>
+    <h5>Nouveau Dossier</h5>
+    <p>Créer un nouveau dossier d'assurance</p>
+  </a>
+  <a href="/admin-view-dossier" class="menu-card">
+    <i class="fas fa-folder-open"></i>
+    <h5>Voir Tous les Dossiers</h5>
+    <p>Liste complète avec recherche</p>
+  </a>
+  <a href="/admin-add-vehicle" class="menu-card">
+    <i class="fas fa-car"></i>
+    <h5>Ajouter Véhicule</h5>
+    <p>Enregistrer un nouveau véhicule</p>
+  </a>
+  <a href="/admin-view-vehicle" class="menu-card">
+    <i class="fas fa-list"></i>
+    <h5>Voir Véhicules</h5>
+    <p>Tous les véhicules enregistrés</p>
+  </a>
+</div>
+{% endblock content %}
