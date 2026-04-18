@@ -126,9 +126,9 @@ class RemiseCompagnie(models.Model):
         verbose_name_plural = "Remises Compagnie"
 
 
-# Keep Question model for internal use
 class Question(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # null=True so existing rows are not affected during migration
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     description = models.CharField(max_length=500)
     admin_comment = models.CharField(max_length=200, default='Sans réponse')
     asked_date = models.DateField(auto_now=True)
