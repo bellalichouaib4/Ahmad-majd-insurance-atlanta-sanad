@@ -2,175 +2,196 @@
 {% load widget_tweaks %}
 {% block content %}
 
+<style>
+  a { text-decoration: none; }
+  .stat-card { color: #fff; border-radius: 10px; margin-bottom: 20px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: transform 0.2s; }
+  .stat-card:hover { transform: translateY(-3px); }
+  .stat-card h6 { font-size: 13px; opacity: 0.9; margin-bottom: 10px; }
+  .stat-card h2 { font-size: 32px; font-weight: 700; margin: 0; }
+  .stat-card small { font-size: 11px; opacity: 0.8; }
+  .bg-teal    { background: linear-gradient(135deg, #01696f, #0c4e54); }
+  .bg-blue    { background: linear-gradient(135deg, #006494, #0b3751); }
+  .bg-orange  { background: linear-gradient(135deg, #da7101, #ac3e00); }
+  .bg-red     { background: linear-gradient(135deg, #a13544, #521f24); }
+  .bg-green   { background: linear-gradient(135deg, #437a22, #1e3f0a); }
+  .bg-purple  { background: linear-gradient(135deg, #7a39bb, #431673); }
+  .bg-dark    { background: linear-gradient(135deg, #2d2c2a, #171614); }
+  .bg-gold    { background: linear-gradient(135deg, #d19900, #8a5b00); }
+  .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #7a7974; margin: 30px 0 15px; border-bottom: 1px solid #dcd9d5; padding-bottom: 6px; }
+  .recent-table th { font-size: 12px; color: #7a7974; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .recent-table td { font-size: 13px; vertical-align: middle; }
+  .badge-actif     { background: #d4dfcc; color: #1e3f0a; padding: 3px 8px; border-radius: 20px; font-size: 11px; }
+  .badge-expire    { background: #dcd9d5; color: #28251d; padding: 3px 8px; border-radius: 20px; font-size: 11px; }
+  .badge-attente   { background: #e9e0c6; color: #8a5b00; padding: 3px 8px; border-radius: 20px; font-size: 11px; }
+  .badge-solde     { background: #d4dfcc; color: #1e3f0a; padding: 3px 8px; border-radius: 20px; font-size: 11px; }
+  .badge-nonsolde  { background: #e0ced7; color: #561740; padding: 3px 8px; border-radius: 20px; font-size: 11px; }
+</style>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <link href="http://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
-    <style type="text/css">
-      a:link {
-        text-decoration: none;
-      }
-  
-      .order-card {
-        color: rgb(255, 255, 255);
-      }
-  
-      .bg-c-blue {
-        background: #04868f;
-      }
-  
-      .bg-c-green {
-        background:#4C51BF;
-      }
-  
-      .bg-c-yellow {
-        background: #F56565;
-      }
-  
-      .bg-c-pink {
-        background: #663a30;
-      }
-  
-  
-      .card {
-        
-        -webkit-box-shadow: 0 1px 2.94px 0.06px rgba(4, 26, 55, 0.16);
-        box-shadow: 0 1px 2.94px 0.06px rgba(4, 26, 55, 0.16);
-        border: 1px solid black;
-        margin-bottom: 30px;
-        -webkit-transition: all 0.3s ease-in-out;
-        transition: all 0.3s ease-in-out;
-      }
-  
-      .card .card-block {
-        padding: 25px;
-      }
-  
-      .order-card i {
-        font-size: 26px;
-      }
-  
-      .f-left {
-        float: left;
-      }
-  
-      .f-right {
-        float: right;
-      }
-      header {
-      left: 0px;
-      right: 0px;
-    }
-    </style>
-  </head>
+<div class="container-fluid px-4 py-3">
 
-
-  <div class="container">
-
-    
-    <div class="row">
-      <div class="col-md-4 col-xl-3">
-        <div class="card bg-c-green order-card">
-          <div class="card-block">
-            <h6 class="m-b-20"> <a href="admin-view-customer" style="text-decoration: none;color:white;">Total Registered User</a> </h6>
-            <h2 class="text-right"><i  class="fas fa-users f-left"></i><span>{{total_user}}</span></h2>
-            
-          </div>
-        </div>
-      </div>
-  
-      <div class="col-md-4 col-xl-3">
-        <div class="card bg-c-green order-card">
-          <div class="card-block">
-            <h6 class="m-b-20"><a href="admin-view-policy" style="text-decoration: none;color:white;">Listed Policies</a> </h6>
-            <h2 class="text-right"><i class="fab fa-product-hunt f-left"></i><span>{{total_policy}}</span></h2>
-            
-          </div>
-        </div>
-      </div>
-  
-      <div class="col-md-4 col-xl-3">
-        <div class="card bg-c-green order-card">
-          <div class="card-block">
-            <h6 class="m-b-20"><a href="admin-view-category" style="text-decoration: none;color:white;">Listed Categories</a></h6>
-           <h2 class="text-right"><i class="fas fa-list-alt f-left"></i><span>{{total_category}}</span></h2>
-            
-          </div>
-        </div>
-      </div>
-  
-      <div class="col-md-4 col-xl-3">
-        <div class="card bg-c-green order-card">
-          <div class="card-block">
-            <h6 class="m-b-20"><a href="admin-question" style="text-decoration: none;color:white;">Total Question</a></h6>
-            <h2 class="text-right"><i class="fas fa-question-circle f-left"></i><span>{{total_question}}</span></h2>
-            
-          </div>
-        </div>
-      </div>
-
-      
+  <!-- PAGE TITLE -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h4 style="margin:0; font-weight:700;">Tableau de Bord</h4>
+      <small style="color:#7a7974;">Atlanta Sanad — Bureau Direct</small>
     </div>
-
-    <br>
-    <div class="row">
-      <div class="col-md-4 col-xl-3">
-        <div class="card bg-c-green order-card">
-          <div class="card-block">
-            <h6 class="m-b-20"> <a href="admin-view-policy-holder" style="text-decoration: none;color:white;">Total Applied Policy Holder</a> </h6>
-            <h2 class="text-right"><i class="fas fa-user-cog f-left"></i><span>{{total_policy_holder}}</span></h2>
-            
-          </div>
-        </div>
-      </div>
-  
-      <div class="col-md-4 col-xl-3">
-        <div class="card bg-c-green order-card">
-          <div class="card-block">
-            <h6 class="m-b-20"><a href="admin-view-approved-policy-holder" style="text-decoration: none;color:white;">Approved Policy Holder</a> </h6>
-            <h2 class="text-right"><i class="fas fa-user-check f-left"></i><span>{{approved_policy_holder}}</span></h2>
-            
-          </div>
-        </div>
-      </div>
-  
-      <div class="col-md-4 col-xl-3">
-        <div class="card bg-c-green order-card">
-          <div class="card-block">
-            <h6 class="m-b-20"><a href="admin-view-disapproved-policy-holder" style="text-decoration: none;color:white;">Disapproved Policy Holder</a></h6>
-           <h2 class="text-right"><i class="fas fa-user-times f-left"></i><span>{{disapproved_policy_holder}}</span></h2>
-            
-          </div>
-        </div>
-      </div>
-  
-      <div class="col-md-4 col-xl-3">
-        <div class="card bg-c-green order-card">
-          <div class="card-block">
-            <h6 class="m-b-20"><a href="admin-view-waiting-policy-holder" style="text-decoration: none;color:white;">Policy Holder Waiting For Approval</a></h6>
-            <h2 class="text-right"><i class="fas fa-user-clock f-left"></i><span>{{waiting_policy_holder}}</span></h2>
-            
-          </div>
-        </div>
-      </div>
-
-      
-    </div>
-
-  
-
+    <a href="admin-add-dossier" class="btn btn-sm" style="background:#01696f;color:#fff;border-radius:8px;">+ Nouveau Dossier</a>
   </div>
 
+  <!-- ROW 1: KEY STATS -->
+  <p class="section-title">📂 Production</p>
+  <div class="row">
+    <div class="col-md-3">
+      <div class="stat-card bg-teal">
+        <h6><a href="admin-view-dossier" style="color:white;">Total Dossiers</a></h6>
+        <h2>{{ total_dossiers }}</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card bg-green">
+        <h6>Dossiers Actifs</h6>
+        <h2>{{ dossiers_actifs }}</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card bg-orange">
+        <h6>Expirés</h6>
+        <h2>{{ dossiers_expires }}</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card bg-gold">
+        <h6>En Attente</h6>
+        <h2>{{ dossiers_en_attente }}</h2>
+      </div>
+    </div>
+  </div>
 
-<br><br><br><br><br><br>
+  <!-- ROW 2: FINANCIAL -->
+  <p class="section-title">💰 Suivi Financier (MAD)</p>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="stat-card bg-blue">
+        <h6>Prime Totale Globale</h6>
+        <h2>{{ total_prime|floatformat:2 }}</h2>
+        <small>Total des primes émises</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card bg-green">
+        <h6>Montant Encaissé</h6>
+        <h2>{{ total_encaisse|floatformat:2 }}</h2>
+        <small>Total collecté clients</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card bg-red">
+        <h6>Reste à Encaisser</h6>
+        <h2>{{ total_reste|floatformat:2 }}</h2>
+        <small>{{ dossiers_non_soldes }} dossier(s) non soldés</small>
+      </div>
+    </div>
+  </div>
 
-<script src="http://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+  <!-- ROW 3: ACTORS -->
+  <p class="section-title">👥 Acteurs</p>
+  <div class="row">
+    <div class="col-md-3">
+      <div class="stat-card bg-dark">
+        <h6><a href="admin-view-customer" style="color:white;">Clients</a></h6>
+        <h2>{{ total_clients }}</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card bg-purple">
+        <h6>Agents Commerciaux</h6>
+        <h2>{{ total_agents }}</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card bg-teal">
+        <h6><a href="admin-view-category" style="color:white;">Catégories</a></h6>
+        <h2>{{ total_categories }}</h2>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card bg-blue">
+        <h6><a href="admin-view-vehicle" style="color:white;">Véhicules</a></h6>
+        <h2>{{ total_vehicles }}</h2>
+      </div>
+    </div>
+  </div>
 
+  <!-- ROW 4: REMISES -->
+  <p class="section-title">🏦 Remises → Atlanta Sanad</p>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="stat-card bg-orange">
+        <h6><a href="admin-view-remise" style="color:white;">Remises en Attente</a></h6>
+        <h2>{{ remises_en_attente }}</h2>
+        <small>Non encore remises à la compagnie</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card bg-teal">
+        <h6><a href="admin-add-remise" style="color:white;">+ Nouvelle Remise</a></h6>
+        <h2 style="font-size:18px;margin-top:8px;">Créer une remise vers Atlanta Sanad</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT DOSSIERS TABLE -->
+  <p class="section-title">🕒 Derniers Dossiers</p>
+  <div class="card" style="border-radius:10px; border:1px solid #dcd9d5;">
+    <div class="card-body p-0">
+      <table class="table recent-table mb-0">
+        <thead style="background:#f7f6f2;">
+          <tr>
+            <th class="pl-3">N°</th>
+            <th>Assuré(e)</th>
+            <th>Police N°</th>
+            <th>Prime (MAD)</th>
+            <th>Encaissé</th>
+            <th>Reste</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in recent_dossiers %}
+          <tr>
+            <td class="pl-3"><strong>{{ d.numero_dossier }}</strong></td>
+            <td>{{ d.assure }}</td>
+            <td><small style="color:#7a7974;">{{ d.numero_police }}</small></td>
+            <td><strong>{{ d.prime_totale }}</strong></td>
+            <td>{{ d.montant_encaisse }}</td>
+            <td>
+              {% if d.reste > 0 %}
+                <span class="badge-nonsolde">{{ d.reste }}</span>
+              {% else %}
+                <span class="badge-solde">✔ Soldé</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if d.status == 'Actif' %}<span class="badge-actif">Actif</span>
+              {% elif d.status == 'Expiré' %}<span class="badge-expire">Expiré</span>
+              {% else %}<span class="badge-attente">{{ d.status }}</span>{% endif %}
+            </td>
+            <td>
+              <a href="update-dossier/{{ d.id }}" style="color:#01696f; font-size:13px;">Modifier</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="8" class="text-center py-4" style="color:#7a7974;">Aucun dossier encore créé. <a href="admin-add-dossier">Ajouter le premier</a></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="text-right mt-2">
+    <a href="admin-view-dossier" style="color:#01696f; font-size:13px;">Voir tous les dossiers →</a>
+  </div>
+
+</div>
 
 {% endblock content %}
