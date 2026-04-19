@@ -47,13 +47,27 @@ class DossierForm(forms.ModelForm):
 
 
 class RemiseCompagnieForm(forms.ModelForm):
+    dossiers = forms.ModelMultipleChoiceField(
+        queryset=models.Dossier.objects.all().order_by('-date_creation'),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label="Dossiers Inclus"
+    )
+
     class Meta:
         model = models.RemiseCompagnie
-        fields = ['dossiers', 'date_remise', 'montant_total', 'commission_agence', 'status', 'reference', 'notes']
+        fields = ['reference', 'date_remise', 'dossiers', 'montant_total', 'commission_agence', 'status', 'notes']
         widgets = {
             'date_remise': forms.DateInput(attrs={'type': 'date'}),
             'notes': forms.Textarea(attrs={'rows': 3}),
-            'dossiers': forms.CheckboxSelectMultiple(),
+        }
+        labels = {
+            'reference': 'Référence Remise',
+            'date_remise': 'Date de Remise',
+            'montant_total': 'Montant Total Remis (MAD)',
+            'commission_agence': 'Commission Agence (MAD)',
+            'status': 'Statut',
+            'notes': 'Notes',
         }
 
 
