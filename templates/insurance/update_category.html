@@ -1,69 +1,67 @@
 {% extends 'insurance/adminbase.html' %}
 {% load widget_tweaks %}
 {% block content %}
-<head>
-  <style media="screen">
-    input[type=text], select,input[type=number] ,input[type=password], textarea{
-    width: 100%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    display: inline-block;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-  }
+<style>
+.form-card{background:#fff;border-radius:12px;border:1px solid #dcd9d5;padding:32px;max-width:560px;margin:32px auto;}
+.form-title{font-size:18px;font-weight:700;color:#28251d;margin-bottom:4px;}
+.form-subtitle{font-size:13px;color:#7a7974;margin-bottom:28px;}
+.form-group label{font-size:13px;font-weight:600;color:#28251d;margin-bottom:4px;display:block;}
+.form-control{border:1px solid #d4d1ca;border-radius:8px;font-size:13px;padding:9px 13px;width:100%;}
+.form-control:focus{border-color:#01696f;box-shadow:0 0 0 3px rgba(1,105,111,.1);outline:none;}
+.hint{font-size:12px;color:#7a7974;margin-top:4px;}
+.code-preview{display:inline-block;background:#cedcd8;color:#01696f;font-weight:700;font-size:13px;border-radius:6px;padding:2px 10px;margin-top:6px;letter-spacing:.5px;font-family:monospace;}
+.btn-submit{background:#01696f;color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-submit:hover{background:#0c4e54;}
+.btn-cancel{background:#f3f0ec;color:#28251d;border:1px solid #d4d1ca;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:500;text-decoration:none;margin-left:10px;}
+.btn-cancel:hover{background:#edeae5;color:#28251d;text-decoration:none;}
+.divider{border:none;border-top:1px solid #edeae5;margin:20px 0;}
+</style>
 
-  input[type=submit] {
-    width: 100%;
-    background-color: #4CAF50;
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-  }
+<div class="form-card">
+  <div class="form-title"><i class="fas fa-tag" style="color:#01696f;"></i> Modifier la Catégorie</div>
+  <div class="form-subtitle">Modifiez le code ou le libellé de la catégorie.</div>
 
-  input[type=submit]:hover {
-    background-color: #45a049;
-  }
+  {% if categoryForm.errors %}
+    <div class="alert alert-danger" style="font-size:13px;">
+      {% for field,errors in categoryForm.errors.items %}
+        {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+      {% endfor %}
+    </div>
+  {% endif %}
 
+  <form method="POST">
+    {% csrf_token %}
 
-   label #sidebar_btn {
-      z-index: 1;
-      color: #fff;
-      position: fixed;
-      cursor: pointer;
-      left: 300px;
-      padding-left: 60px;
-      margin-top:15px;
-      font-size: 20px;
-      
-      transition: 0.5s;
-      transition-property: color;
-    }
-    .left_area{
-      margin-top:8px;
-    }
-  </style>
+    <div class="form-group" style="margin-bottom:20px;">
+      <label>Code Catégorie <span style="color:#a13544;">*</span></label>
+      {% render_field categoryForm.code_categorie class="form-control" id="codeInput" %}
+      <div class="hint">Code officiel Atlanta Sanad. Modifiez avec précaution.</div>
+      <div id="codePreview" class="code-preview"></div>
+    </div>
 
+    <hr class="divider">
 
-</head>
+    <div class="form-group" style="margin-bottom:24px;">
+      <label>Libellé / Nom de la Catégorie <span style="color:#a13544;">*</span></label>
+      {% render_field categoryForm.category_name class="form-control" %}
+    </div>
 
-<br><br>
-<h3 style="text-align:center;">UPDATE CATEGORY</h3>
-<div>
-  <form method="post" autocomplete="off" enctype="multipart/form-data" style="margin-left:200px;margin-right:200px;">
-      {% csrf_token %}
-        <label for="first_name">Category Name</label>
-        {% render_field categoryForm.category_name class="form-control" %}
-        
-<br><br>
-    <input type="submit" value="Update">
+    <div style="display:flex;align-items:center;">
+      <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Enregistrer les modifications</button>
+      <a href="/admin-view-category" class="btn-cancel"><i class="fas fa-times"></i> Annuler</a>
+    </div>
   </form>
 </div>
 
-
-
-<br><br><br><br><br><br><br><br>
+<script>
+const codeInput = document.getElementById('codeInput');
+const preview = document.getElementById('codePreview');
+function updatePreview(){
+  const v = codeInput.value.trim().toUpperCase();
+  preview.textContent = v || '';
+  codeInput.value = v;
+}
+updatePreview();
+codeInput.addEventListener('input', updatePreview);
+</script>
 {% endblock content %}

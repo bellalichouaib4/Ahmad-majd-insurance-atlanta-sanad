@@ -12,8 +12,14 @@ class ContactusForm(forms.Form):
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = models.Category
-        fields = ['category_name']
-        labels = {'category_name': "Catégorie d'assurance"}
+        fields = ['code_categorie', 'category_name']
+        labels = {
+            'code_categorie': 'Code Catégorie',
+            'category_name': 'Libellé / Nom de la Catégorie',
+        }
+        help_texts = {
+            'code_categorie': "Code convenu entre l'agence et Atlanta Sanad (ex : VT, 2R, TC, MRC...)",
+        }
 
 
 class VehicleForm(forms.ModelForm):
@@ -23,7 +29,7 @@ class VehicleForm(forms.ModelForm):
         labels = {
             'marque': 'Marque',
             'immatriculation': 'Immatriculation',
-            'categorie': "Catégorie",
+            'categorie': 'Catégorie',
         }
 
 

@@ -1,33 +1,70 @@
 {% extends 'insurance/adminbase.html' %}
 {% load widget_tweaks %}
 {% block content %}
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  <style>
-       <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  a:link {
-        text-decoration: none;
-      }
-    
-  </style>
-</head>
-<h2 style="text-align:center; color:blue;">ADD CATEGORY</h2>
-<form method="POST" autocomplete="off" style="margin:100px;margin-top: 0px;">
-    {%csrf_token%}
-    <div class="form-group">
-      <label for="course_name">Category Name</label>
-      {% render_field categoryForm.category_name class="form-control" placeholder="Life Insurance" %}
+<style>
+.form-card{background:#fff;border-radius:12px;border:1px solid #dcd9d5;padding:32px;max-width:560px;margin:32px auto;}
+.form-title{font-size:18px;font-weight:700;color:#28251d;margin-bottom:4px;}
+.form-subtitle{font-size:13px;color:#7a7974;margin-bottom:28px;}
+.form-group label{font-size:13px;font-weight:600;color:#28251d;margin-bottom:4px;display:block;}
+.form-control{border:1px solid #d4d1ca;border-radius:8px;font-size:13px;padding:9px 13px;width:100%;}
+.form-control:focus{border-color:#01696f;box-shadow:0 0 0 3px rgba(1,105,111,.1);outline:none;}
+.hint{font-size:12px;color:#7a7974;margin-top:4px;}
+.code-preview{display:inline-block;background:#cedcd8;color:#01696f;font-weight:700;font-size:13px;border-radius:6px;padding:2px 10px;margin-top:6px;letter-spacing:.5px;font-family:monospace;}
+.btn-submit{background:#01696f;color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-submit:hover{background:#0c4e54;}
+.btn-cancel{background:#f3f0ec;color:#28251d;border:1px solid #d4d1ca;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:500;text-decoration:none;margin-left:10px;}
+.btn-cancel:hover{background:#edeae5;color:#28251d;text-decoration:none;}
+.divider{border:none;border-top:1px solid #edeae5;margin:20px 0;}
+</style>
 
+<div class="form-card">
+  <div class="form-title"><i class="fas fa-tag" style="color:#01696f;"></i> Nouvelle Catégorie</div>
+  <div class="form-subtitle">Ajoutez une catégorie d'assurance avec son code officiel Atlanta Sanad.</div>
+
+  {% if categoryForm.errors %}
+    <div class="alert alert-danger" style="font-size:13px;">
+      {% for field,errors in categoryForm.errors.items %}
+        {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+      {% endfor %}
     </div>
-    
-<br>
-    <button type="submit" class="btn btn-primary">ADD</button>
+  {% endif %}
+
+  <form method="POST">
+    {% csrf_token %}
+
+    <div class="form-group" style="margin-bottom:20px;">
+      <label>Code Catégorie <span style="color:#a13544;">*</span></label>
+      {% render_field categoryForm.code_categorie class="form-control" placeholder="Ex : VT, 2R, TC, MRC" id="codeInput" %}
+      <div class="hint">Code convenu entre l'agence et Atlanta Sanad. Doit être unique.</div>
+      <div id="codePreview" class="code-preview" style="display:none;"></div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="form-group" style="margin-bottom:24px;">
+      <label>Libellé / Nom de la Catégorie <span style="color:#a13544;">*</span></label>
+      {% render_field categoryForm.category_name class="form-control" placeholder="Ex : Véhicule Tourisme, 2 Roues, Transport en Commun..." %}
+    </div>
+
+    <div style="display:flex;align-items:center;">
+      <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Enregistrer</button>
+      <a href="/admin-view-category" class="btn-cancel"><i class="fas fa-times"></i> Annuler</a>
+    </div>
   </form>
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+</div>
+
+<script>
+const codeInput = document.getElementById('codeInput');
+const preview = document.getElementById('codePreview');
+codeInput.addEventListener('input', function(){
+  const v = this.value.trim().toUpperCase();
+  if(v){
+    preview.textContent = v;
+    preview.style.display = 'inline-block';
+    this.value = v;
+  } else {
+    preview.style.display = 'none';
+  }
+});
+</script>
 {% endblock content %}

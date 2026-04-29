@@ -13,11 +13,22 @@ class AgentCommercial(models.Model):
 
 class Category(models.Model):
     """Catégorie d'assurance: Véhicule tourisme, 2 Roues, etc."""
-    category_name = models.CharField(max_length=100)
+    code_categorie = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name="Code Catégorie",
+        help_text="Code convenu entre l'agence et Atlanta Sanad (ex: VT, 2R, TC...)"
+    )
+    category_name = models.CharField(max_length=100, verbose_name="Libellé Catégorie")
     creation_date = models.DateField(auto_now=True)
 
     def __str__(self):
-        return self.category_name
+        return f"{self.code_categorie} — {self.category_name}"
+
+    class Meta:
+        verbose_name = "Catégorie"
+        verbose_name_plural = "Catégories"
+        ordering = ['code_categorie']
 
 
 class Vehicle(models.Model):
@@ -82,7 +93,6 @@ class Dossier(models.Model):
 
     @property
     def reste(self):
-        """Automatically calculated remaining balance."""
         return self.prime_totale - self.montant_encaisse
 
     @property
@@ -99,8 +109,6 @@ class Dossier(models.Model):
 
 
 class RemiseCompagnie(models.Model):
-    """Tracks remittance from the BD agency to Atlanta Sanad (compagnie)."""
-
     STATUS_CHOICES = [
         ('En attente', 'En attente'),
         ('Remis', 'Remis'),
@@ -127,7 +135,6 @@ class RemiseCompagnie(models.Model):
 
 
 class Question(models.Model):
-    # null=True so existing rows are not affected during migration
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     description = models.CharField(max_length=500)
     admin_comment = models.CharField(max_length=200, default='Sans réponse')
