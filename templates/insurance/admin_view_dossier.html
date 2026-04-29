@@ -1,28 +1,31 @@
 {% extends 'insurance/adminbase.html' %}
 {% block content %}
 <style>
-.page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-.page-title { font-size:18px; font-weight:700; color:#28251d; }
-.btn-add { background:#01696f; color:#fff; border:none; border-radius:8px; padding:8px 18px; font-size:13px; font-weight:600; text-decoration:none; }
-.btn-add:hover { background:#0c4e54; color:#fff; }
-.table-card { background:#fff; border-radius:12px; border:1px solid #dcd9d5; overflow:hidden; }
-table { width:100%; border-collapse:collapse; }
-thead th { background:#f7f6f2; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; color:#7a7974; padding:12px 14px; border-bottom:1px solid #dcd9d5; }
-tbody td { padding:11px 14px; font-size:13px; border-bottom:1px solid #f3f0ec; vertical-align:middle; }
-tbody tr:last-child td { border-bottom:none; }
-tbody tr:hover { background:#f9f8f5; }
-.badge { padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; }
-.badge-actif { background:#d4dfcc; color:#1e3f0a; }
-.badge-expire { background:#dcd9d5; color:#28251d; }
-.badge-attente { background:#e9e0c6; color:#8a5b00; }
-.badge-solde { background:#d4dfcc; color:#1e3f0a; }
-.badge-nonsolde { background:#e0ced7; color:#561740; }
-.action-link { font-size:12px; color:#01696f; text-decoration:none; margin-right:8px; }
-.action-link:hover { color:#0c4e54; }
-.action-del { font-size:12px; color:#a13544; text-decoration:none; }
-.action-del:hover { color:#521f24; }
-.search-bar { margin-bottom:16px; }
-.search-bar input { border:1px solid #d4d1ca; border-radius:8px; padding:8px 14px; font-size:13px; width:300px; }
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.page-title{font-size:18px;font-weight:700;color:#28251d;}
+.btn-add{background:#01696f;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-add:hover{background:#0c4e54;color:#fff;text-decoration:none;}
+.table-wrap{overflow-x:auto;}
+.table-card{background:#fff;border-radius:12px;border:1px solid #dcd9d5;overflow:hidden;min-width:1400px;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:#f7f6f2;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#7a7974;padding:11px 12px;border-bottom:1px solid #dcd9d5;white-space:nowrap;}
+tbody td{padding:10px 12px;font-size:12.5px;border-bottom:1px solid #f3f0ec;vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#f9f8f5;}
+.badge{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
+.badge-actif{background:#d4dfcc;color:#1e3f0a;}
+.badge-expire{background:#dcd9d5;color:#28251d;}
+.badge-attente{background:#e9e0c6;color:#8a5b00;}
+.badge-annule{background:#e0ced7;color:#561740;}
+.badge-solde{background:#d4dfcc;color:#1e3f0a;}
+.badge-nonsolde{background:#e0ced7;color:#561740;}
+.action-link{font-size:12px;color:#01696f;text-decoration:none;margin-right:6px;white-space:nowrap;}
+.action-link:hover{color:#0c4e54;}
+.action-del{font-size:12px;color:#a13544;text-decoration:none;}
+.action-del:hover{color:#521f24;}
+.search-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.search-row input,.search-row select{border:1px solid #d4d1ca;border-radius:8px;padding:7px 12px;font-size:13px;}
+.search-row input{width:260px;}
 </style>
 
 <div class="page-header">
@@ -33,35 +36,56 @@ tbody tr:hover { background:#f9f8f5; }
   <a href="/admin-add-dossier" class="btn-add"><i class="fas fa-plus"></i> Nouveau Dossier</a>
 </div>
 
-<div class="search-bar">
-  <input type="text" id="searchInput" placeholder="Rechercher par assuré, police, dossier..." onkeyup="filterTable()">
+<div class="search-row">
+  <input type="text" id="searchInput" placeholder="Rechercher par assuré, police, dossier, imm..." onkeyup="filterTable()">
+  <select id="statusFilter" onchange="filterTable()">
+    <option value="">Tous les statuts</option>
+    <option>Actif</option>
+    <option>Expiré</option>
+    <option>En attente</option>
+    <option>Annulé</option>
+  </select>
 </div>
 
+<div class="table-wrap">
 <div class="table-card">
   <table id="dossierTable">
     <thead>
       <tr>
         <th>N° Dossier</th>
         <th>Assuré(e)</th>
+        <th>Téléphone</th>
         <th>Police N°</th>
+        <th>Attestation</th>
+        <th>Quittance</th>
+        <th>Marque</th>
+        <th>Imm</th>
         <th>Catégorie</th>
         <th>Effet</th>
         <th>Échéance</th>
         <th>Prime (MAD)</th>
         <th>Encaissé</th>
         <th>Reste</th>
+        <th>Mode Paiement</th>
+        <th>Date Règlement</th>
         <th>Statut</th>
         <th>Agent</th>
+        <th>Observation</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
       {% for d in dossiers %}
-      <tr>
+      <tr data-status="{{ d.status }}">
         <td><strong>{{ d.numero_dossier }}</strong></td>
-        <td>{{ d.assure }}<br><small style="color:#7a7974;">{{ d.telephone }}</small></td>
+        <td style="min-width:130px;">{{ d.assure }}</td>
+        <td><small>{{ d.telephone|default:"-" }}</small></td>
         <td><small>{{ d.numero_police }}</small></td>
-        <td>{{ d.categorie }}</td>
+        <td><small>{{ d.numero_attestation|default:"-" }}</small></td>
+        <td><small>{{ d.numero_quittance|default:"-" }}</small></td>
+        <td><small>{{ d.vehicle.marque|default:"-" }}</small></td>
+        <td><small>{{ d.vehicle.immatriculation|default:"-" }}</small></td>
+        <td><small>{{ d.vehicle.categorie|default:"-" }}</small></td>
         <td><small>{{ d.date_effet }}</small></td>
         <td><small>{{ d.date_echeance }}</small></td>
         <td><strong>{{ d.prime_totale }}</strong></td>
@@ -73,32 +97,39 @@ tbody tr:hover { background:#f9f8f5; }
             <span class="badge badge-solde">✔ Soldé</span>
           {% endif %}
         </td>
+        <td><small>{{ d.mode_paiement }}</small></td>
+        <td><small>{{ d.date_reglement|default:"-" }}</small></td>
         <td>
           {% if d.status == 'Actif' %}<span class="badge badge-actif">Actif</span>
           {% elif d.status == 'Expiré' %}<span class="badge badge-expire">Expiré</span>
+          {% elif d.status == 'Annulé' %}<span class="badge badge-annule">Annulé</span>
           {% else %}<span class="badge badge-attente">{{ d.status }}</span>{% endif %}
         </td>
-        <td><small>{{ d.agent_commercial }}</small></td>
-        <td>
+        <td><small>{{ d.agent_commercial|default:"-" }}</small></td>
+        <td style="max-width:140px;"><small>{{ d.observation|default:"-"|truncatechars:40 }}</small></td>
+        <td style="white-space:nowrap;">
           <a href="/update-dossier/{{ d.id }}" class="action-link"><i class="fas fa-edit"></i> Modifier</a>
-          <a href="/delete-dossier/{{ d.id }}" class="action-del" onclick="return confirm('Supprimer ce dossier ?')"><i class="fas fa-trash"></i></a>
+          <a href="/delete-dossier/{{ d.id }}" class="action-del" onclick="return confirm('Supprimer le dossier {{ d.numero_dossier }} de {{ d.assure }} ?')"><i class="fas fa-trash"></i></a>
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="12" style="text-align:center; padding:40px; color:#7a7974;">
+      <tr><td colspan="20" style="text-align:center;padding:40px;color:#7a7974;">
         Aucun dossier trouvé. <a href="/admin-add-dossier" style="color:#01696f;">Créer le premier dossier</a>
       </td></tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+</div>
 
 <script>
-function filterTable() {
-  const input = document.getElementById('searchInput').value.toLowerCase();
-  const rows = document.querySelectorAll('#dossierTable tbody tr');
-  rows.forEach(row => {
-    row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+function filterTable(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const s=document.getElementById('statusFilter').value;
+  document.querySelectorAll('#dossierTable tbody tr').forEach(row=>{
+    const textMatch=row.textContent.toLowerCase().includes(q);
+    const statusMatch=!s||row.dataset.status===s;
+    row.style.display=(textMatch&&statusMatch)?'':none';
   });
 }
 </script>

@@ -2,34 +2,43 @@
 {% load widget_tweaks %}
 {% block content %}
 <style>
-.form-card { background:#fff; border-radius:12px; border:1px solid #dcd9d5; padding:32px; max-width:860px; margin:0 auto; }
-.form-title { font-size:18px; font-weight:700; color:#28251d; margin-bottom:4px; }
-.form-subtitle { font-size:13px; color:#7a7974; margin-bottom:28px; }
-.form-section { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#7a7974; border-bottom:1px solid #dcd9d5; padding-bottom:6px; margin:24px 0 16px; }
-.form-group label { font-size:13px; font-weight:600; color:#28251d; margin-bottom:4px; }
-.form-control { border:1px solid #d4d1ca; border-radius:8px; font-size:13px; padding:8px 12px; }
-.form-control:focus { border-color:#01696f; box-shadow:0 0 0 3px rgba(1,105,111,0.1); outline:none; }
-.btn-submit { background:#01696f; color:#fff; border:none; border-radius:8px; padding:10px 28px; font-size:14px; font-weight:600; cursor:pointer; transition:background 0.2s; }
-.btn-submit:hover { background:#0c4e54; }
-.btn-cancel { background:#f3f0ec; color:#28251d; border:none; border-radius:8px; padding:10px 20px; font-size:14px; font-weight:600; cursor:pointer; margin-left:10px; }
-.btn-cancel:hover { background:#edeae5; }
+.form-card{background:#fff;border-radius:12px;border:1px solid #dcd9d5;padding:32px;max-width:880px;margin:0 auto;}
+.form-title{font-size:18px;font-weight:700;color:#28251d;margin-bottom:4px;}
+.form-subtitle{font-size:13px;color:#7a7974;margin-bottom:28px;}
+.form-section{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#7a7974;border-bottom:1px solid #dcd9d5;padding-bottom:6px;margin:24px 0 16px;}
+.form-group label{font-size:13px;font-weight:600;color:#28251d;margin-bottom:4px;display:block;}
+.form-control{border:1px solid #d4d1ca;border-radius:8px;font-size:13px;padding:8px 12px;width:100%;}
+.form-control:focus{border-color:#01696f;box-shadow:0 0 0 3px rgba(1,105,111,.1);outline:none;}
+.btn-submit{background:#01696f;color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-submit:hover{background:#0c4e54;}
+.btn-cancel{background:#f3f0ec;color:#28251d;border:1px solid #d4d1ca;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:500;text-decoration:none;margin-left:10px;}
+.btn-cancel:hover{background:#edeae5;color:#28251d;text-decoration:none;}
 </style>
 
 <div class="form-card">
   <div class="form-title">Nouveau Dossier</div>
   <div class="form-subtitle">Créer un nouveau dossier d'assurance — Atlanta Sanad Bureau Direct</div>
 
+  {% if dossierForm.errors %}
+    <div class="alert alert-danger">
+      {% for field,errors in dossierForm.errors.items %}
+        {% for e in errors %}<div><strong>{{ field }}</strong> : {{ e }}</div>{% endfor %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
   <form method="POST">
     {% csrf_token %}
 
+    <!-- Section 1: Identification -->
     <div class="form-section">Identification du Dossier</div>
     <div class="row">
       <div class="col-md-4 form-group">
         <label>N° Dossier</label>
-        {% render_field dossierForm.numero_dossier class="form-control" placeholder="BD-2024-001" %}
+        {% render_field dossierForm.numero_dossier class="form-control" placeholder="001" %}
       </div>
       <div class="col-md-4 form-group">
-        <label>N° Police</label>
+        <label>Police N°</label>
         {% render_field dossierForm.numero_police class="form-control" placeholder="Police N°" %}
       </div>
       <div class="col-md-4 form-group">
@@ -37,37 +46,53 @@
         {% render_field dossierForm.numero_attestation class="form-control" placeholder="Attestation N°" %}
       </div>
     </div>
+    <div class="row">
+      <div class="col-md-4 form-group">
+        <label>N° Quittance</label>
+        {% render_field dossierForm.numero_quittance class="form-control" placeholder="Quittance N°" %}
+      </div>
+      <div class="col-md-4 form-group">
+        <label>Statut</label>
+        {% render_field dossierForm.status class="form-control" %}
+      </div>
+      <div class="col-md-4 form-group">
+        <label>Agent Commercial</label>
+        {% render_field dossierForm.agent_commercial class="form-control" %}
+      </div>
+    </div>
 
-    <div class="form-section">Assuré & Véhicule</div>
+    <!-- Section 2: Assuré -->
+    <div class="form-section">Assuré(e)</div>
     <div class="row">
       <div class="col-md-6 form-group">
-        <label>Assuré(e)</label>
+        <label>Nom complet de l'Assuré(e)</label>
         {% render_field dossierForm.assure class="form-control" placeholder="Nom complet" %}
       </div>
-      <div class="col-md-3 form-group">
+      <div class="col-md-6 form-group">
         <label>Téléphone</label>
         {% render_field dossierForm.telephone class="form-control" placeholder="06XXXXXXXX" %}
       </div>
-      <div class="col-md-3 form-group">
-        <label>Catégorie</label>
-        {% render_field dossierForm.categorie class="form-control" %}
-      </div>
     </div>
+
+    <!-- Section 3: Véhicule & Dates -->
+    <div class="form-section">Véhicule & Dates</div>
     <div class="row">
       <div class="col-md-6 form-group">
         <label>Véhicule (Marque / Immatriculation)</label>
-        {% render_field dossierForm.vehicule class="form-control" %}
+        {% render_field dossierForm.vehicle class="form-control" %}
+        <small style="color:#7a7974;">Si le véhicule n'existe pas, <a href="/admin-add-vehicle" style="color:#01696f;">ajoutez-le d'abord</a>.</small>
       </div>
       <div class="col-md-3 form-group">
         <label>Date d'Effet</label>
-        {% render_field dossierForm.date_effet class="form-control" type="date" %}
+        {% render_field dossierForm.date_effet class="form-control" %}
       </div>
       <div class="col-md-3 form-group">
         <label>Date d'Échéance</label>
-        {% render_field dossierForm.date_echeance class="form-control" type="date" %}
+        {% render_field dossierForm.date_echeance class="form-control" %}
       </div>
     </div>
 
+    <!-- Section 4: Financier -->
     <div class="form-section">Informations Financières</div>
     <div class="row">
       <div class="col-md-3 form-group">
@@ -79,37 +104,24 @@
         {% render_field dossierForm.montant_encaisse class="form-control" placeholder="0.00" %}
       </div>
       <div class="col-md-3 form-group">
-        <label>N° Quittance</label>
-        {% render_field dossierForm.numero_quittance class="form-control" placeholder="Quittance N°" %}
-      </div>
-      <div class="col-md-3 form-group">
         <label>Mode de Paiement</label>
         {% render_field dossierForm.mode_paiement class="form-control" %}
       </div>
-    </div>
-    <div class="row">
-      <div class="col-md-4 form-group">
+      <div class="col-md-3 form-group">
         <label>Date de Règlement</label>
-        {% render_field dossierForm.date_reglement class="form-control" type="date" %}
-      </div>
-      <div class="col-md-4 form-group">
-        <label>Agent Commercial</label>
-        {% render_field dossierForm.agent_commercial class="form-control" %}
-      </div>
-      <div class="col-md-4 form-group">
-        <label>Statut</label>
-        {% render_field dossierForm.status class="form-control" %}
+        {% render_field dossierForm.date_reglement class="form-control" %}
       </div>
     </div>
 
+    <!-- Section 5: Observation -->
     <div class="form-section">Observation</div>
     <div class="form-group">
-      {% render_field dossierForm.observation class="form-control" rows="3" placeholder="Notes ou remarques..." %}
+      {% render_field dossierForm.observation class="form-control" rows="3" placeholder="Notes, remarques..." %}
     </div>
 
-    <div class="mt-3">
+    <div class="mt-4 d-flex align-items-center">
       <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Enregistrer le Dossier</button>
-      <a href="/admin-view-dossier" class="btn-cancel">Annuler</a>
+      <a href="/admin-view-dossier" class="btn-cancel"><i class="fas fa-times"></i> Annuler</a>
     </div>
   </form>
 </div>
