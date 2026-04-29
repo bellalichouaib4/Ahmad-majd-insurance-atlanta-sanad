@@ -1,0 +1,33 @@
+{% extends 'insurance/adminbase.html' %}
+{% load widget_tweaks %}
+{% block content %}
+<style>
+.form-card{background:#fff;border-radius:12px;border:1px solid #dcd9d5;padding:32px;max-width:580px;margin:0 auto;}
+.form-title{font-size:18px;font-weight:700;color:#28251d;margin-bottom:4px;}
+.form-subtitle{font-size:13px;color:#7a7974;margin-bottom:28px;}
+.form-group label{font-size:13px;font-weight:600;color:#28251d;margin-bottom:4px;display:block;}
+.form-control{border:1px solid #d4d1ca;border-radius:8px;font-size:13px;padding:9px 13px;width:100%;}
+.form-control:focus{border-color:#01696f;box-shadow:0 0 0 3px rgba(1,105,111,.1);outline:none;}
+.btn-submit{background:#01696f;color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-submit:hover{background:#0c4e54;}
+.btn-cancel{background:#f3f0ec;color:#28251d;border:1px solid #d4d1ca;border-radius:8px;padding:10px 20px;font-size:14px;text-decoration:none;margin-left:10px;}
+</style>
+<div class="form-card">
+  <div class="form-title"><i class="fas fa-user-edit" style="color:#01696f;"></i> Modifier Client</div>
+  <div class="form-subtitle">{{ client.nom_complet }}</div>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="form-group" style="margin-bottom:16px;"><label>Nom Complet *</label>{% render_field clientForm.nom_complet class="form-control" %}</div>
+    <div class="row">
+      <div class="col-md-6 form-group" style="margin-bottom:16px;"><label>Téléphone</label>{% render_field clientForm.telephone class="form-control" %}</div>
+      <div class="col-md-6 form-group" style="margin-bottom:16px;"><label>CIN</label>{% render_field clientForm.cin class="form-control" %}</div>
+    </div>
+    <div class="form-group" style="margin-bottom:16px;"><label>Adresse</label>{% render_field clientForm.adresse class="form-control" %}</div>
+    <div class="form-group" style="margin-bottom:24px;"><label>Email</label>{% render_field clientForm.email class="form-control" %}</div>
+    <div style="display:flex;align-items:center;">
+      <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Enregistrer</button>
+      <a href="/admin-view-client" class="btn-cancel">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock content %}

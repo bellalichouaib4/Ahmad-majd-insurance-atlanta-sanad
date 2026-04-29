@@ -1,8 +1,9 @@
-from django.shortcuts import render, redirect
+import json
+from django.shortcuts import render, redirect, get_object_or_404
 from . import forms, models
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.contrib.auth.models import Group
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from datetime import date
@@ -25,8 +26,7 @@ def is_customer(user):
 def afterlogin_view(request):
     if is_customer(request.user):
         return redirect('customer/customer-dashboard')
-    else:
-        return redirect('admin-dashboard')
+    return redirect('admin-dashboard')
 
 
 def adminclick_view(request):
@@ -37,21 +37,18 @@ def adminclick_view(request):
 
 @login_required(login_url='adminlogin')
 def admin_dashboard_view(request):
-    # Financial summary
     total_prime = models.Dossier.objects.aggregate(Sum('prime_totale'))['prime_totale__sum'] or 0
     total_encaisse = models.Dossier.objects.aggregate(Sum('montant_encaisse'))['montant_encaisse__sum'] or 0
     total_reste = total_prime - total_encaisse
-
     context = {
-        'total_clients': CMODEL.Customer.objects.count(),
+        'total_clients': models.Client.objects.count(),
         'total_dossiers': models.Dossier.objects.count(),
         'total_categories': models.Category.objects.count(),
         'total_vehicles': models.Vehicle.objects.count(),
         'total_agents': models.AgentCommercial.objects.count(),
         'dossiers_actifs': models.Dossier.objects.filter(status='Actif').count(),
-        'dossiers_expires': models.Dossier.objects.filter(status='Expiré').count(),
+        'dossiers_expires': models.Dossier.objects.filter(status='Expir\u00e9').count(),
         'dossiers_en_attente': models.Dossier.objects.filter(status='En attente').count(),
-        'dossiers_non_soldes': models.Dossier.objects.filter(montant_encaisse__lt=models.models.F('prime_totale')).count(),
         'total_prime': total_prime,
         'total_encaisse': total_encaisse,
         'total_reste': total_reste,
@@ -63,6 +60,74 @@ def admin_dashboard_view(request):
 
 # ─── CLIENTS ───────────────────────────────────────────────────────────────────
 
+@login_required(login_url='adminlogin')
+def admin_view_client_view(request):
+    q = request.GET.get('q', '')
+    clients = models.Client.objects.all()
+    if q:
+        clients = clients.filter(
+            Q(nom_complet__icontains=q) | Q(telephone__icontains=q) | Q(cin__icontains=q)
+        )
+    return render(request, 'insurance/admin_view_client.html', {'clients': clients, 'q': q})
+
+
+@login_required(login_url='adminlogin')
+def admin_add_client_view(request):
+    clientForm = forms.ClientForm()
+    if request.method == 'POST':
+        clientForm = forms.ClientForm(request.POST)
+        if clientForm.is_valid():
+            clientForm.save()
+            return redirect('admin-view-client')
+    return render(request, 'insurance/admin_add_client.html', {'clientForm': clientForm})
+
+
+@login_required(login_url='adminlogin')
+def update_client_view(request, pk):
+    client = get_object_or_404(models.Client, pk=pk)
+    clientForm = forms.ClientForm(instance=client)
+    if request.method == 'POST':
+        clientForm = forms.ClientForm(request.POST, instance=client)
+        if clientForm.is_valid():
+            clientForm.save()
+            return redirect('admin-view-client')
+    return render(request, 'insurance/update_client.html', {'clientForm': clientForm, 'client': client})
+
+
+@login_required(login_url='adminlogin')
+def delete_client_view(request, pk):
+    client = get_object_or_404(models.Client, pk=pk)
+    client.delete()
+    return redirect('admin-view-client')
+
+
+# Ajax endpoint: return client JSON for autofill
+@login_required(login_url='adminlogin')
+def client_detail_ajax(request, pk):
+    client = get_object_or_404(models.Client, pk=pk)
+    vehicles = list(client.vehicles.values('id', 'marque', 'modele', 'immatriculation'))
+    return JsonResponse({
+        'nom_complet': client.nom_complet,
+        'telephone': client.telephone,
+        'cin': client.cin or '',
+        'vehicles': vehicles,
+    })
+
+
+# Ajax: search clients by name/cin/tel
+@login_required(login_url='adminlogin')
+def client_search_ajax(request):
+    q = request.GET.get('q', '')
+    results = []
+    if len(q) >= 2:
+        clients = models.Client.objects.filter(
+            Q(nom_complet__icontains=q) | Q(telephone__icontains=q) | Q(cin__icontains=q)
+        )[:10]
+        results = [{'id': c.id, 'text': str(c)} for c in clients]
+    return JsonResponse({'results': results})
+
+
+# Legacy customer views (kept)
 @login_required(login_url='adminlogin')
 def admin_view_customer_view(request):
     customers = CMODEL.Customer.objects.all()
@@ -131,7 +196,7 @@ def admin_delete_category_view(request):
 def delete_category_view(request, pk):
     category = models.Category.objects.get(id=pk)
     category.delete()
-    return redirect('admin-delete-category')
+    return redirect('admin-view-category')
 
 
 @login_required(login_url='adminlogin')
@@ -148,7 +213,7 @@ def update_category_view(request, pk):
         categoryForm = forms.CategoryForm(request.POST, instance=category)
         if categoryForm.is_valid():
             categoryForm.save()
-            return redirect('admin-update-category')
+            return redirect('admin-view-category')
     return render(request, 'insurance/update_category.html', {'categoryForm': categoryForm})
 
 
@@ -162,35 +227,47 @@ def admin_dossier_view(request):
 @login_required(login_url='adminlogin')
 def admin_add_dossier_view(request):
     dossierForm = forms.DossierForm()
+    clients = models.Client.objects.all().order_by('nom_complet')
     if request.method == 'POST':
         dossierForm = forms.DossierForm(request.POST)
         if dossierForm.is_valid():
             dossierForm.save()
             return redirect('admin-view-dossier')
-    return render(request, 'insurance/admin_add_dossier.html', {'dossierForm': dossierForm})
+    return render(request, 'insurance/admin_add_dossier.html', {'dossierForm': dossierForm, 'clients': clients})
 
 
 @login_required(login_url='adminlogin')
 def admin_view_dossier_view(request):
-    dossiers = models.Dossier.objects.all()
-    return render(request, 'insurance/admin_view_dossier.html', {'dossiers': dossiers})
+    q = request.GET.get('q', '')
+    status_filter = request.GET.get('status', '')
+    dossiers = models.Dossier.objects.select_related('client', 'vehicle', 'vehicle__categorie', 'agent_commercial').all()
+    if q:
+        dossiers = dossiers.filter(
+            Q(assure__icontains=q) | Q(numero_police__icontains=q) |
+            Q(client__nom_complet__icontains=q) | Q(vehicle__immatriculation__icontains=q) |
+            Q(numero_attestation__icontains=q) | Q(numero_quittance__icontains=q)
+        )
+    if status_filter:
+        dossiers = dossiers.filter(status=status_filter)
+    return render(request, 'insurance/admin_view_dossier.html', {'dossiers': dossiers, 'q': q, 'status_filter': status_filter})
 
 
 @login_required(login_url='adminlogin')
 def update_dossier_view(request, pk):
-    dossier = models.Dossier.objects.get(id=pk)
+    dossier = get_object_or_404(models.Dossier, pk=pk)
     dossierForm = forms.DossierForm(instance=dossier)
+    clients = models.Client.objects.all().order_by('nom_complet')
     if request.method == 'POST':
         dossierForm = forms.DossierForm(request.POST, instance=dossier)
         if dossierForm.is_valid():
             dossierForm.save()
             return redirect('admin-view-dossier')
-    return render(request, 'insurance/update_dossier.html', {'dossierForm': dossierForm})
+    return render(request, 'insurance/update_dossier.html', {'dossierForm': dossierForm, 'clients': clients})
 
 
 @login_required(login_url='adminlogin')
 def delete_dossier_view(request, pk):
-    dossier = models.Dossier.objects.get(id=pk)
+    dossier = get_object_or_404(models.Dossier, pk=pk)
     dossier.delete()
     return redirect('admin-view-dossier')
 
@@ -204,13 +281,14 @@ def admin_add_vehicle_view(request):
         vehicleForm = forms.VehicleForm(request.POST)
         if vehicleForm.is_valid():
             vehicleForm.save()
-            return redirect('admin-view-dossier')
+            return redirect('admin-view-vehicle')
+        # form invalid — fall through and show errors
     return render(request, 'insurance/admin_add_vehicle.html', {'vehicleForm': vehicleForm})
 
 
 @login_required(login_url='adminlogin')
 def admin_view_vehicle_view(request):
-    vehicles = models.Vehicle.objects.all()
+    vehicles = models.Vehicle.objects.select_related('categorie', 'client').all()
     return render(request, 'insurance/admin_view_vehicle.html', {'vehicles': vehicles})
 
 

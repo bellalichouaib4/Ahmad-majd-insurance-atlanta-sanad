@@ -1,0 +1,72 @@
+{% extends 'insurance/adminbase.html' %}
+{% block content %}
+<style>
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.page-title{font-size:18px;font-weight:700;color:#28251d;}
+.btn-add{background:#01696f;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-add:hover{background:#0c4e54;color:#fff;text-decoration:none;}
+.search-box{display:flex;gap:8px;}
+.search-input{border:1px solid #d4d1ca;border-radius:8px;padding:7px 13px;font-size:13px;min-width:220px;}
+.search-input:focus{border-color:#01696f;outline:none;}
+.table-card{background:#fff;border-radius:12px;border:1px solid #dcd9d5;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead th{background:#f7f6f2;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#7a7974;padding:12px 16px;border-bottom:1px solid #dcd9d5;}
+tbody td{padding:11px 16px;font-size:13px;border-bottom:1px solid #f3f0ec;vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#f9f8f5;}
+.vehicles-count{background:#cedcd8;color:#01696f;font-size:11px;font-weight:700;border-radius:99px;padding:2px 8px;}
+.action-link{font-size:12px;color:#01696f;text-decoration:none;margin-right:8px;}
+.action-link:hover{color:#0c4e54;}
+.action-del{font-size:12px;color:#a13544;text-decoration:none;}
+</style>
+
+<div class="page-header">
+  <div>
+    <div class="page-title">Clients</div>
+    <small style="color:#7a7974;">{{ clients|length }} client(s) enregistré(s)</small>
+  </div>
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+    <form method="GET" class="search-box">
+      <input name="q" value="{{ q }}" class="search-input" placeholder="Rechercher nom, CIN, tél...">
+      <button type="submit" class="btn-add" style="padding:7px 14px;"><i class="fas fa-search"></i></button>
+    </form>
+    <a href="/admin-add-client" class="btn-add"><i class="fas fa-plus"></i> Nouveau Client</a>
+  </div>
+</div>
+
+<div class="table-card">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Nom Complet</th>
+        <th>Téléphone</th>
+        <th>CIN</th>
+        <th>Véhicules</th>
+        <th>Dossiers</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in clients %}
+      <tr>
+        <td style="color:#7a7974;">{{ forloop.counter }}</td>
+        <td><strong>{{ c.nom_complet }}</strong><br><small style="color:#7a7974;">{{ c.adresse|truncatechars:40 }}</small></td>
+        <td>{{ c.telephone|default:"—" }}</td>
+        <td><code style="font-size:12px;">{{ c.cin|default:"—" }}</code></td>
+        <td><span class="vehicles-count">{{ c.vehicles.count }}</span></td>
+        <td><span class="vehicles-count" style="background:#e6ddc4;color:#8a5b00;">{{ c.dossiers.count }}</span></td>
+        <td>
+          <a href="/update-client/{{ c.id }}" class="action-link"><i class="fas fa-edit"></i> Modifier</a>
+          <a href="/delete-client/{{ c.id }}" class="action-del" onclick="return confirm('Supprimer {{ c.nom_complet }} ?')"><i class="fas fa-trash"></i></a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;padding:40px;color:#7a7974;">
+        Aucun client. <a href="/admin-add-client" style="color:#01696f;">Ajouter le premier</a>
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}

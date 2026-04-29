@@ -2,33 +2,76 @@
 {% load widget_tweaks %}
 {% block content %}
 <style>
-.form-card { background:#fff; border-radius:12px; border:1px solid #dcd9d5; padding:32px; max-width:600px; margin:0 auto; }
-.form-title { font-size:18px; font-weight:700; color:#28251d; margin-bottom:4px; }
-.form-subtitle { font-size:13px; color:#7a7974; margin-bottom:28px; }
-.form-group label { font-size:13px; font-weight:600; color:#28251d; margin-bottom:4px; }
-.form-control { border:1px solid #d4d1ca; border-radius:8px; font-size:13px; padding:8px 12px; }
-.form-control:focus { border-color:#01696f; box-shadow:0 0 0 3px rgba(1,105,111,0.1); outline:none; }
-.btn-submit { background:#01696f; color:#fff; border:none; border-radius:8px; padding:10px 28px; font-size:14px; font-weight:600; cursor:pointer; }
-.btn-submit:hover { background:#0c4e54; }
-.btn-cancel { background:#f3f0ec; color:#28251d; border:none; border-radius:8px; padding:10px 20px; font-size:14px; margin-left:10px; text-decoration:none; }
+.form-card{background:#fff;border-radius:12px;border:1px solid #dcd9d5;padding:32px;max-width:640px;margin:0 auto;}
+.form-title{font-size:18px;font-weight:700;color:#28251d;margin-bottom:4px;}
+.form-subtitle{font-size:13px;color:#7a7974;margin-bottom:28px;}
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#7a7974;margin:20px 0 12px;border-bottom:1px solid #edeae5;padding-bottom:6px;}
+.form-group label{font-size:13px;font-weight:600;color:#28251d;margin-bottom:4px;display:block;}
+.form-control{border:1px solid #d4d1ca;border-radius:8px;font-size:13px;padding:9px 13px;width:100%;}
+.form-control:focus{border-color:#01696f;box-shadow:0 0 0 3px rgba(1,105,111,.1);outline:none;}
+.error-text{color:#a13544;font-size:12px;margin-top:3px;}
+.btn-submit{background:#01696f;color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-submit:hover{background:#0c4e54;}
+.btn-cancel{background:#f3f0ec;color:#28251d;border:1px solid #d4d1ca;border-radius:8px;padding:10px 20px;font-size:14px;text-decoration:none;margin-left:10px;}
+.btn-cancel:hover{background:#edeae5;color:#28251d;text-decoration:none;}
+.alert-err{background:#fdf0f2;border:1px solid #e0ced7;border-radius:8px;padding:12px 16px;color:#a12c7b;font-size:13px;margin-bottom:20px;}
 </style>
 
 <div class="form-card">
   <div class="form-title"><i class="fas fa-car" style="color:#01696f;"></i> Ajouter un Véhicule</div>
-  <div class="form-subtitle">Enregistrer un nouveau véhicule assuré</div>
+  <div class="form-subtitle">Enregistrez un nouveau véhicule assuré dans la base de données.</div>
+
+  {% if vehicleForm.errors %}
+  <div class="alert-err">
+    {% for field, errors in vehicleForm.errors.items %}
+      {% for e in errors %}<div>⚠️ {{ e }}</div>{% endfor %}
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <form method="POST">
     {% csrf_token %}
+
+    <div class="section-label">Propriétaire</div>
+    <div class="form-group" style="margin-bottom:16px;">
+      <label>Client Propriétaire <small style="color:#7a7974;font-weight:400;">(optionnel)</small></label>
+      {% render_field vehicleForm.client class="form-control" %}
+    </div>
+
+    <div class="section-label">Informations Véhicule</div>
     <div class="row">
-      <div class="col-md-6 form-group"><label>Marque</label>{% render_field vehicleForm.marque class="form-control" placeholder="Ex: Dacia, Renault..." %}</div>
-      <div class="col-md-6 form-group"><label>Modèle</label>{% render_field vehicleForm.modele class="form-control" placeholder="Ex: Logan, Clio..." %}</div>
+      <div class="col-md-6 form-group" style="margin-bottom:14px;">
+        <label>Marque <span style="color:#a13544;">*</span></label>
+        {% render_field vehicleForm.marque class="form-control" placeholder="Ex: Dacia, Renault, Toyota" %}
+        {% if vehicleForm.marque.errors %}<div class="error-text">{{ vehicleForm.marque.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="col-md-6 form-group" style="margin-bottom:14px;">
+        <label>Modèle <small style="color:#7a7974;font-weight:400;">(optionnel)</small></label>
+        {% render_field vehicleForm.modele class="form-control" placeholder="Ex: Logan, Clio, Corolla" %}
+      </div>
     </div>
     <div class="row">
-      <div class="col-md-6 form-group"><label>Immatriculation</label>{% render_field vehicleForm.immatriculation class="form-control" placeholder="Ex: 12345-A-1" %}</div>
-      <div class="col-md-6 form-group"><label>Année</label>{% render_field vehicleForm.annee class="form-control" placeholder="Ex: 2020" %}</div>
+      <div class="col-md-5 form-group" style="margin-bottom:14px;">
+        <label>Immatriculation <span style="color:#a13544;">*</span></label>
+        {% render_field vehicleForm.immatriculation class="form-control" placeholder="Ex: 12345-A-1" %}
+        {% if vehicleForm.immatriculation.errors %}<div class="error-text">{{ vehicleForm.immatriculation.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="col-md-3 form-group" style="margin-bottom:14px;">
+        <label>Année <small style="color:#7a7974;font-weight:400;">(opt.)</small></label>
+        {% render_field vehicleForm.annee class="form-control" placeholder="2020" %}
+      </div>
+      <div class="col-md-4 form-group" style="margin-bottom:14px;">
+        <label>Type <span style="color:#a13544;">*</span></label>
+        {% render_field vehicleForm.type_vehicule class="form-control" %}
+      </div>
     </div>
-    <div class="form-group"><label>Type de Véhicule</label>{% render_field vehicleForm.type_vehicule class="form-control" %}</div>
-    <div class="mt-3">
+
+    <div class="form-group" style="margin-bottom:24px;">
+      <label>Catégorie d'Assurance</label>
+      {% render_field vehicleForm.categorie class="form-control" %}
+    </div>
+
+    <div style="display:flex;align-items:center;">
       <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Enregistrer</button>
       <a href="/admin-view-vehicle" class="btn-cancel">Annuler</a>
     </div>
