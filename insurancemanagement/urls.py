@@ -5,29 +5,30 @@ from django.contrib.auth.views import LogoutView, LoginView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('customer/', include('customer.urls')),
+    # customer app removed from public routing
     path('', views.home_view, name=''),
     path('logout', LogoutView.as_view(template_name='insurance/logout.html'), name='logout'),
+    path('afterlogin', views.afterlogin_view, name='afterlogin'),
     path('aboutus', views.aboutus_view),
     path('contactus', views.contactus_view),
-    path('afterlogin', views.afterlogin_view, name='afterlogin'),
 
     # --- Auth ---
     path('adminlogin', LoginView.as_view(template_name='insurance/adminlogin.html'), name='adminlogin'),
     path('admin-dashboard', views.admin_dashboard_view, name='admin-dashboard'),
 
-    # --- Clients (new standalone model) ---
+    # --- Workers (admin only) ---
+    path('admin-view-workers', views.admin_view_workers_view, name='admin-view-workers'),
+    path('admin-add-worker', views.admin_add_worker_view, name='admin-add-worker'),
+    path('toggle-worker/<int:pk>', views.admin_toggle_worker_view, name='toggle-worker'),
+    path('delete-worker/<int:pk>', views.admin_delete_worker_view, name='delete-worker'),
+
+    # --- Clients ---
     path('admin-view-client', views.admin_view_client_view, name='admin-view-client'),
     path('admin-add-client', views.admin_add_client_view, name='admin-add-client'),
     path('update-client/<int:pk>', views.update_client_view, name='update-client'),
     path('delete-client/<int:pk>', views.delete_client_view, name='delete-client'),
-    path('api/client/<int:pk>/', views.client_detail_ajax, name='client-detail-ajax'),
-    path('api/client/search/', views.client_search_ajax, name='client-search-ajax'),
-
-    # --- Legacy customers ---
-    path('admin-view-customer', views.admin_view_customer_view, name='admin-view-customer'),
-    path('update-customer/<int:pk>', views.update_customer_view, name='update-customer'),
-    path('delete-customer/<int:pk>', views.delete_customer_view, name='delete-customer'),
+    path('client-detail-ajax/<int:pk>/', views.client_detail_ajax, name='client-detail-ajax'),
+    path('client-search-ajax/', views.client_search_ajax, name='client-search-ajax'),
 
     # --- Catégories ---
     path('admin-category', views.admin_category_view, name='admin-category'),
@@ -49,7 +50,7 @@ urlpatterns = [
     path('admin-add-vehicle', views.admin_add_vehicle_view, name='admin-add-vehicle'),
     path('admin-view-vehicle', views.admin_view_vehicle_view, name='admin-view-vehicle'),
 
-    # --- Remise Compagnie ---
+    # --- Remise Compagnie (admin only) ---
     path('admin-view-remise', views.admin_view_remise_view, name='admin-view-remise'),
     path('admin-add-remise', views.admin_add_remise_view, name='admin-add-remise'),
 

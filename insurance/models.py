@@ -4,18 +4,21 @@ from django.contrib.auth.models import User
 
 class AgentCommercial(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    mobile = models.CharField(max_length=20)
+    mobile = models.CharField(max_length=20, blank=True)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.user.get_full_name() or self.user.username
+
+    class Meta:
+        verbose_name = "Agent Commercial"
+        verbose_name_plural = "Agents Commerciaux"
 
 
 class Category(models.Model):
     code_categorie = models.CharField(
         max_length=50, unique=True,
         verbose_name="Code Catégorie",
-        help_text="Code convenu entre l'agence et Atlanta Sanad (ex: 3401, 3601...)"
     )
     category_name = models.CharField(max_length=100, verbose_name="Libellé")
     creation_date = models.DateField(auto_now=True)
@@ -30,7 +33,6 @@ class Category(models.Model):
 
 
 class Client(models.Model):
-    """Standalone client record — reused across multiple dossiers."""
     nom_complet = models.CharField(max_length=200, verbose_name="Nom Complet")
     telephone = models.CharField(max_length=20, verbose_name="Téléphone", blank=True)
     cin = models.CharField(max_length=30, verbose_name="CIN", blank=True, unique=True, null=True)
@@ -62,22 +64,16 @@ class Vehicle(models.Model):
         ('Autre', 'Autre'),
     ]
     client = models.ForeignKey(
-        Client, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        verbose_name="Client Propriétaire",
-        related_name='vehicles'
+        Client, on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name="Client Propriétaire", related_name='vehicles'
     )
     marque = models.CharField(max_length=100, verbose_name="Marque")
     modele = models.CharField(max_length=100, verbose_name="Modèle", blank=True)
     immatriculation = models.CharField(max_length=50, verbose_name="Immatriculation", unique=True)
     annee = models.PositiveIntegerField(verbose_name="Année", null=True, blank=True)
-    type_vehicule = models.CharField(
-        max_length=30, choices=TYPE_CHOICES,
-        default='Tourisme', verbose_name="Type de Véhicule"
-    )
+    type_vehicule = models.CharField(max_length=30, choices=TYPE_CHOICES, default='Tourisme', verbose_name="Type de Véhicule")
     categorie = models.ForeignKey(
-        Category, on_delete=models.SET_NULL,
-        null=True, blank=True,
+        Category, on_delete=models.SET_NULL, null=True, blank=True,
         verbose_name="Catégorie d'Assurance"
     )
 
@@ -104,55 +100,33 @@ class Dossier(models.Model):
     ]
 
     numero_dossier = models.PositiveIntegerField(verbose_name="N° Dossier", unique=True)
-
-    # --- Catégorie (picked first in the form) ---
     categorie = models.ForeignKey(
-        Category, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        verbose_name="Catégorie",
-        related_name='dossiers'
+        Category, on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name="Catégorie", related_name='dossiers'
     )
-
-    # --- Client ---
     client = models.ForeignKey(
-        Client, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        verbose_name="Client Assuré",
-        related_name='dossiers'
+        Client, on_delete=models.SET_NULL, null=True, blank=True,
+        verbose_name="Client Assuré", related_name='dossiers'
     )
     assure = models.CharField(max_length=200, verbose_name="Assuré(e)", blank=True)
     telephone = models.CharField(max_length=20, verbose_name="Téléphone", blank=True)
-
-    # --- Police & Documents ---
     numero_police = models.CharField(max_length=100, verbose_name="Police N°")
     numero_attestation = models.CharField(max_length=100, verbose_name="Attestation N°", blank=True)
     numero_quittance = models.CharField(max_length=100, verbose_name="Quittance N°", blank=True)
-
-    # --- Vehicle (auto/cyclo categories only) ---
     vehicle = models.ForeignKey(
-        Vehicle, on_delete=models.SET_NULL,
-        null=True, blank=True,
-        verbose_name="Véhicule"
+        Vehicle, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Véhicule"
     )
-
-    # --- Dates ---
     date_effet = models.DateField(verbose_name="Date d'effet")
     date_echeance = models.DateField(verbose_name="Date d'échéance")
     date_creation = models.DateField(auto_now_add=True)
-
-    # --- Financial ---
     prime_totale = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prime Totale (MAD)")
     montant_encaisse = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Montant Encaissé (MAD)")
     mode_paiement = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='Espèce', verbose_name="Mode de Paiement")
     date_reglement = models.DateField(null=True, blank=True, verbose_name="Date de Règlement")
-
-    # --- Status & Notes ---
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Actif', verbose_name="Statut")
     observation = models.TextField(blank=True, verbose_name="Observation")
-
     agent_commercial = models.ForeignKey(
-        AgentCommercial, on_delete=models.SET_NULL,
-        null=True, blank=True, verbose_name="Agent Commercial"
+        AgentCommercial, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Agent Commercial"
     )
 
     @property
@@ -164,14 +138,10 @@ class Dossier(models.Model):
         return self.reste <= 0
 
     def get_assure_display(self):
-        if self.client:
-            return self.client.nom_complet
-        return self.assure
+        return self.client.nom_complet if self.client else self.assure
 
     def get_telephone_display(self):
-        if self.client:
-            return self.client.telephone
-        return self.telephone
+        return self.client.telephone if self.client else self.telephone
 
     def __str__(self):
         return f"Dossier {self.numero_dossier} - {self.get_assure_display()}"

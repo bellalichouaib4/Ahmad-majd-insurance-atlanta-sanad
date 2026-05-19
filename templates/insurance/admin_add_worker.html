@@ -1,0 +1,43 @@
+{% extends 'insurance/adminbase.html' %}
+{% block content %}
+<div class="container mt-4" style="max-width:520px">
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert alert-{{ msg.tags }}">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white"><b>👤 Ajouter un employé</b></div>
+    <div class="card-body">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+          <label>Nom d’utilisateur *</label>
+          <input name="username" class="form-control" required placeholder="ex: hanane">
+        </div>
+        <div class="row">
+          <div class="col form-group">
+            <label>Prénom</label>
+            <input name="first_name" class="form-control" placeholder="Prénom">
+          </div>
+          <div class="col form-group">
+            <label>Nom</label>
+            <input name="last_name" class="form-control" placeholder="Nom">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input name="mobile" class="form-control" placeholder="06XXXXXXXX">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe *</label>
+          <input name="password" type="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-success btn-block">Créer le compte</button>
+        <a href="{% url 'admin-view-workers' %}" class="btn btn-secondary btn-block mt-2">Annuler</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
