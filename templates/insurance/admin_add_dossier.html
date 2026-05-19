@@ -1,199 +1,263 @@
 {% extends 'insurance/adminbase.html' %}
 {% load widget_tweaks %}
+
 {% block content %}
-<style>
-.form-card{background:#fff;border-radius:12px;border:1px solid #dcd9d5;padding:32px;max-width:780px;margin:0 auto;}
-.form-title{font-size:18px;font-weight:700;color:#28251d;margin-bottom:4px;}
-.form-subtitle{font-size:13px;color:#7a7974;margin-bottom:24px;}
-.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#7a7974;margin:22px 0 12px;border-bottom:1px solid #edeae5;padding-bottom:6px;}
-.form-group label{font-size:13px;font-weight:600;color:#28251d;margin-bottom:4px;display:block;}
-.form-control{border:1px solid #d4d1ca;border-radius:8px;font-size:13px;padding:9px 13px;width:100%;}
-.form-control:focus{border-color:#01696f;box-shadow:0 0 0 3px rgba(1,105,111,.1);outline:none;}
-.btn-submit{background:#01696f;color:#fff;border:none;border-radius:8px;padding:10px 28px;font-size:14px;font-weight:600;cursor:pointer;}
-.btn-submit:hover{background:#0c4e54;}
-.btn-cancel{background:#f3f0ec;color:#28251d;border:1px solid #d4d1ca;border-radius:8px;padding:10px 20px;font-size:14px;text-decoration:none;margin-left:10px;}
-.btn-cancel:hover{background:#edeae5;color:#28251d;text-decoration:none;}
-.autofill-card{background:#f7f6f2;border:1px solid #d4d1ca;border-radius:10px;padding:14px 18px;margin-bottom:16px;display:none;}
-.autofill-name{font-size:14px;font-weight:700;color:#28251d;}
-.autofill-meta{font-size:12px;color:#7a7974;margin-top:2px;}
-.tag-new{font-size:11px;background:#cedcd8;color:#01696f;border-radius:99px;padding:2px 8px;font-weight:600;vertical-align:middle;margin-left:6px;}
-.alert-err{background:#fdf0f2;border:1px solid #e0ced7;border-radius:8px;padding:12px 16px;color:#a12c7b;font-size:13px;margin-bottom:20px;}
-</style>
+<div class="container mt-4" style="max-width:860px">
 
-<div class="form-card">
-  <div class="form-title"><i class="fas fa-folder-plus" style="color:#01696f;"></i> Nouveau Dossier</div>
-  <div class="form-subtitle">Créez un dossier d'assurance. Sélectionnez un client existant pour remplissage automatique.</div>
-
-  {% if dossierForm.errors %}
-  <div class="alert-err">
-    {% for field, errors in dossierForm.errors.items %}
-      {% for e in errors %}<div>⚠️ <strong>{{ field }}</strong>: {{ e }}</div>{% endfor %}
-    {% endfor %}
+  <!-- STEP INDICATOR -->
+  <div class="d-flex align-items-center mb-4">
+    <div id="step-badge-1" class="badge badge-primary px-3 py-2 mr-2" style="font-size:1rem">1</div>
+    <span id="step-label-1" style="font-weight:600">Choisir la catégorie</span>
+    <div class="mx-3" style="flex:1;height:2px;background:#dee2e6"></div>
+    <div id="step-badge-2" class="badge badge-secondary px-3 py-2 mr-2" style="font-size:1rem">2</div>
+    <span id="step-label-2" style="color:#6c757d">Remplir le dossier</span>
   </div>
-  {% endif %}
 
-  <form method="POST" id="dossierForm">
-    {% csrf_token %}
-
-    <!-- ── CLIENT AUTOFILL ── -->
-    <div class="section-label">Client Assuré</div>
-    <div class="form-group" style="margin-bottom:10px;">
-      <label>Choisir un Client Existant <span class="tag-new">autofill</span></label>
-      <select id="clientSelect" class="form-control">
-        <option value="">-- Sélectionner un client --</option>
-        {% for c in clients %}
-        <option value="{{ c.id }}">{{ c.nom_complet }}{% if c.telephone %} — {{ c.telephone }}{% endif %}{% if c.cin %} ({{ c.cin }}){% endif %}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div id="autofillCard" class="autofill-card">
-      <div class="autofill-name" id="af_name"></div>
-      <div class="autofill-meta" id="af_meta"></div>
-    </div>
-
-    <!-- hidden client FK submitted with form -->
-    {% render_field dossierForm.client id="clientHidden" style="display:none;" %}
-
+  <!-- ══════════════════════ STEP 1 — Category picker ══════════════════════ -->
+  <div id="step1">
+    <h5 class="mb-3">Sélectionner la catégorie d'assurance</h5>
     <div class="row">
-      <div class="col-md-6 form-group" style="margin-bottom:14px;">
-        <label>Assuré(e) <small style="color:#7a7974;font-weight:400;">(si pas dans la liste)</small></label>
-        {% render_field dossierForm.assure class="form-control" id="assureInput" placeholder="Nom complet" %}
+      {% for cat in categories %}
+      <div class="col-6 col-md-4 col-lg-3 mb-3">
+        <div class="cat-card card h-100 text-center p-3"
+             style="cursor:pointer;border:2px solid #dee2e6;border-radius:10px;transition:all .2s"
+             data-id="{{ cat.id }}"
+             data-name="{{ cat.category_name }}"
+             data-code="{{ cat.code_categorie }}">
+          <div style="font-size:2rem;margin-bottom:.4rem">
+            {% if cat.code_categorie == '3401' %}🚗
+            {% elif cat.code_categorie == '3601' %}🛵
+            {% elif cat.code_categorie == '3101' or cat.code_categorie == '3001' %}🏪
+            {% elif cat.code_categorie == '4308' or cat.code_categorie == '2101' %}🏥
+            {% elif cat.code_categorie == '5106' %}🏠
+            {% elif cat.code_categorie == '5131' %}🎓
+            {% elif cat.code_categorie == '9202' %}📦
+            {% else %}📋
+            {% endif %}
+          </div>
+          <div style="font-weight:700;font-size:.95rem">{{ cat.category_name }}</div>
+          <small class="text-muted">{{ cat.code_categorie }}</small>
+        </div>
       </div>
-      <div class="col-md-6 form-group" style="margin-bottom:14px;">
-        <label>Téléphone</label>
-        {% render_field dossierForm.telephone class="form-control" id="telInput" placeholder="06XXXXXXXX" %}
-      </div>
+      {% endfor %}
+    </div>
+    <button type="button" id="btn-next" class="btn btn-primary mt-2" disabled>
+      Continuer →
+    </button>
+  </div>
+
+  <!-- ══════════════════════ STEP 2 — Dossier form ══════════════════════════ -->
+  <div id="step2" style="display:none">
+
+    <!-- Selected category badge -->
+    <div class="alert alert-info d-flex align-items-center justify-content-between py-2" id="selected-cat-banner">
+      <span>Catégorie : <strong id="selected-cat-label"></strong></span>
+      <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-back">← Changer</button>
     </div>
 
-    <!-- ── IDENTIFICATION ── -->
-    <div class="section-label">Identification</div>
-    <div class="row">
-      <div class="col-md-4 form-group" style="margin-bottom:14px;">
-        <label>N° Dossier *</label>
-        {% render_field dossierForm.numero_dossier class="form-control" placeholder="Ex: 1025" %}
-      </div>
-      <div class="col-md-4 form-group" style="margin-bottom:14px;">
-        <label>Police N° *</label>
-        {% render_field dossierForm.numero_police class="form-control" %}
-      </div>
-      <div class="col-md-4 form-group" style="margin-bottom:14px;">
-        <label>Véhicule</label>
-        {% render_field dossierForm.vehicle class="form-control" id="vehicleSelect" %}
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-6 form-group" style="margin-bottom:14px;">
-        <label>Attestation N°</label>
-        {% render_field dossierForm.numero_attestation class="form-control" placeholder="N° Attestation" %}
-      </div>
-      <div class="col-md-6 form-group" style="margin-bottom:14px;">
-        <label>Quittance N°</label>
-        {% render_field dossierForm.numero_quittance class="form-control" placeholder="N° Quittance" %}
-      </div>
-    </div>
+    <form method="POST">
+      {% csrf_token %}
 
-    <!-- ── DATES ── -->
-    <div class="section-label">Dates</div>
-    <div class="row">
-      <div class="col-md-6 form-group" style="margin-bottom:14px;">
-        <label>Date d’Effet *</label>
-        {% render_field dossierForm.date_effet class="form-control" %}
-      </div>
-      <div class="col-md-6 form-group" style="margin-bottom:14px;">
-        <label>Date d’Échéance *</label>
-        {% render_field dossierForm.date_echeance class="form-control" %}
-      </div>
-    </div>
+      <!-- hidden category field -->
+      <input type="hidden" name="categorie" id="id_categorie_hidden">
 
-    <!-- ── FINANCIER ── -->
-    <div class="section-label">Financier</div>
-    <div class="row">
-      <div class="col-md-4 form-group" style="margin-bottom:14px;">
-        <label>Prime Totale (MAD) *</label>
-        {% render_field dossierForm.prime_totale class="form-control" %}
-      </div>
-      <div class="col-md-4 form-group" style="margin-bottom:14px;">
-        <label>Montant Encaissé (MAD)</label>
-        {% render_field dossierForm.montant_encaisse class="form-control" %}
-      </div>
-      <div class="col-md-4 form-group" style="margin-bottom:14px;">
-        <label>Mode de Paiement</label>
-        {% render_field dossierForm.mode_paiement class="form-control" %}
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-6 form-group" style="margin-bottom:14px;">
-        <label>Date de Règlement</label>
-        {% render_field dossierForm.date_reglement class="form-control" %}
-      </div>
-      <div class="col-md-6 form-group" style="margin-bottom:14px;">
-        <label>Statut</label>
-        {% render_field dossierForm.status class="form-control" %}
-      </div>
-    </div>
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white"><b>Informations du dossier</b></div>
+        <div class="card-body">
 
-    <!-- ── AGENT & OBS ── -->
-    <div class="section-label">Suivi</div>
-    <div class="row">
-      <div class="col-md-6 form-group" style="margin-bottom:14px;">
-        <label>Agent Commercial</label>
-        {% render_field dossierForm.agent_commercial class="form-control" %}
-      </div>
-      <div class="col-md-6 form-group" style="margin-bottom:14px;">
-        <label>Observation</label>
-        {% render_field dossierForm.observation class="form-control" %}
-      </div>
-    </div>
+          <!-- N° Dossier & Police -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label>N° Dossier *</label>
+              {% render_field dossierForm.numero_dossier class="form-control" %}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Police N°</label>
+              {% render_field dossierForm.numero_police class="form-control" placeholder="N° Police" %}
+            </div>
+          </div>
 
-    <div style="display:flex;align-items:center;margin-top:8px;">
-      <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Enregistrer le Dossier</button>
-      <a href="/admin-view-dossier" class="btn-cancel">Annuler</a>
-    </div>
-  </form>
+          <!-- Attestation & Quittance -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label>Attestation N°</label>
+              {% render_field dossierForm.numero_attestation class="form-control" placeholder="N° Attestation" %}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Quittance N°</label>
+              {% render_field dossierForm.numero_quittance class="form-control" placeholder="N° Quittance" %}
+            </div>
+          </div>
+
+          <!-- Client search -->
+          <div class="mb-3">
+            <label>Client enregistré (recherche rapide)</label>
+            <input type="text" id="client-search" class="form-control" placeholder="Taper nom, CIN ou téléphone..." autocomplete="off">
+            <div id="client-results" class="list-group mt-1" style="position:absolute;z-index:999;width:calc(100% - 30px)"></div>
+          </div>
+          <input type="hidden" name="client" id="id_client_hidden">
+
+          <!-- Assuré / Tel (autofilled or manual) -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label>Assuré(e) *</label>
+              {% render_field dossierForm.assure class="form-control" id="id_assure" placeholder="Nom complet" %}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Téléphone</label>
+              {% render_field dossierForm.telephone class="form-control" id="id_telephone" placeholder="06XXXXXXXX" %}
+            </div>
+          </div>
+
+          <!-- Vehicle (shown only for auto/cyclo) -->
+          <div class="mb-3" id="vehicle-row">
+            <label>Véhicule</label>
+            {% render_field dossierForm.vehicle class="form-control" %}
+          </div>
+
+          <!-- Dates -->
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label>Date d'effet *</label>
+              {% render_field dossierForm.date_effet class="form-control" type="date" %}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Date d'échéance *</label>
+              {% render_field dossierForm.date_echeance class="form-control" type="date" %}
+            </div>
+          </div>
+
+          <!-- Financier -->
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label>Prime Totale (MAD) *</label>
+              {% render_field dossierForm.prime_totale class="form-control" %}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label>Montant Encaissé (MAD)</label>
+              {% render_field dossierForm.montant_encaisse class="form-control" %}
+            </div>
+            <div class="col-md-4 mb-3">
+              <label>Mode de Paiement</label>
+              {% render_field dossierForm.mode_paiement class="form-control" %}
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label>Date de Règlement</label>
+              {% render_field dossierForm.date_reglement class="form-control" type="date" %}
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>Statut</label>
+              {% render_field dossierForm.status class="form-control" %}
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label>Agent Commercial</label>
+              {% render_field dossierForm.agent_commercial class="form-control" %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label>Observation</label>
+            {% render_field dossierForm.observation class="form-control" rows="2" %}
+          </div>
+
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-success btn-lg btn-block">💾 Enregistrer le Dossier</button>
+    </form>
+  </div>
+
 </div>
 
+<style>
+.cat-card:hover { border-color: #007bff !important; background: #f0f7ff; }
+.cat-card.selected { border-color: #007bff !important; background: #e7f1ff; box-shadow: 0 0 0 3px rgba(0,123,255,.25); }
+</style>
+
 <script>
-// Client autofill via AJAX
-const clientSelect = document.getElementById('clientSelect');
-const clientHidden = document.getElementById('clientHidden');
-const assureInput  = document.getElementById('assureInput');
-const telInput     = document.getElementById('telInput');
-const vehicleSel   = document.getElementById('vehicleSelect');
-const afCard       = document.getElementById('autofillCard');
-const afName       = document.getElementById('af_name');
-const afMeta       = document.getElementById('af_meta');
+const VEHICLE_CATS = ['3401','3601']; // Automobile + Cyclo show vehicle field
+let selectedCatCode = null;
 
-clientSelect.addEventListener('change', function(){
-  const id = this.value;
-  clientHidden.value = id || '';
-  if(!id){ afCard.style.display='none'; return; }
+// ── Category cards ──
+document.querySelectorAll('.cat-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedCatCode = card.dataset.code;
+    document.getElementById('btn-next').disabled = false;
+  });
+});
 
-  fetch(`/api/client/${id}/`)
+document.getElementById('btn-next').addEventListener('click', () => {
+  const card = document.querySelector('.cat-card.selected');
+  document.getElementById('id_categorie_hidden').value = card.dataset.id;
+  document.getElementById('selected-cat-label').textContent =
+    card.dataset.name + '  (' + card.dataset.code + ')';
+  // show/hide vehicle
+  document.getElementById('vehicle-row').style.display =
+    VEHICLE_CATS.includes(selectedCatCode) ? '' : 'none';
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = '';
+  // update step badges
+  document.getElementById('step-badge-1').className = 'badge badge-secondary px-3 py-2 mr-2';
+  document.getElementById('step-badge-2').className = 'badge badge-primary px-3 py-2 mr-2';
+  document.getElementById('step-label-2').style.color = '';
+  document.getElementById('step-label-2').style.fontWeight = '600';
+});
+
+document.getElementById('btn-back').addEventListener('click', () => {
+  document.getElementById('step1').style.display = '';
+  document.getElementById('step2').style.display = 'none';
+  document.getElementById('step-badge-1').className = 'badge badge-primary px-3 py-2 mr-2';
+  document.getElementById('step-badge-2').className = 'badge badge-secondary px-3 py-2 mr-2';
+});
+
+// ── Client live search ──
+const searchInput = document.getElementById('client-search');
+const resultBox  = document.getElementById('client-results');
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim();
+  if (q.length < 2) { resultBox.innerHTML = ''; return; }
+  fetch('/client-search-ajax/?q=' + encodeURIComponent(q))
     .then(r => r.json())
     .then(data => {
-      // Fill visible fields
-      assureInput.value = data.nom_complet || '';
-      telInput.value    = data.telephone || '';
-
-      // Show autofill card
-      afName.textContent = data.nom_complet;
-      afMeta.textContent = [
-        data.telephone ? '\uD83D\uDCDE ' + data.telephone : '',
-        data.cin       ? 'CIN: ' + data.cin : ''
-      ].filter(Boolean).join('  \u2022  ');
-      afCard.style.display = 'block';
-
-      // Filter vehicle dropdown to client's vehicles
-      if(data.vehicles && data.vehicles.length > 0){
-        // Build new options
-        let opts = '<option value="">-- V\u00e9hicule --</option>';
-        data.vehicles.forEach(v => {
-          opts += `<option value="${v.id}">${v.marque} ${v.modele||''} \u2014 ${v.immatriculation}</option>`;
+      resultBox.innerHTML = '';
+      data.results.forEach(item => {
+        const a = document.createElement('a');
+        a.href = '#';
+        a.className = 'list-group-item list-group-item-action';
+        a.textContent = item.text;
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          selectClient(item.id, item.text);
         });
-        vehicleSel.innerHTML = opts;
-      }
+        resultBox.appendChild(a);
+      });
     });
 });
+
+function selectClient(id, label) {
+  document.getElementById('id_client_hidden').value = id;
+  searchInput.value = label;
+  resultBox.innerHTML = '';
+  fetch('/client-detail-ajax/' + id + '/')
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('id_assure').value   = data.nom_complet;
+      document.getElementById('id_telephone').value = data.telephone;
+    });
+}
+
+document.addEventListener('click', e => {
+  if (!resultBox.contains(e.target) && e.target !== searchInput)
+    resultBox.innerHTML = '';
+});
 </script>
-{% endblock content %}
+{% endblock %}

@@ -47,7 +47,7 @@ def admin_dashboard_view(request):
         'total_vehicles': models.Vehicle.objects.count(),
         'total_agents': models.AgentCommercial.objects.count(),
         'dossiers_actifs': models.Dossier.objects.filter(status='Actif').count(),
-        'dossiers_expires': models.Dossier.objects.filter(status='Expir\u00e9').count(),
+        'dossiers_expires': models.Dossier.objects.filter(status='Expiré').count(),
         'dossiers_en_attente': models.Dossier.objects.filter(status='En attente').count(),
         'total_prime': total_prime,
         'total_encaisse': total_encaisse,
@@ -101,7 +101,6 @@ def delete_client_view(request, pk):
     return redirect('admin-view-client')
 
 
-# Ajax endpoint: return client JSON for autofill
 @login_required(login_url='adminlogin')
 def client_detail_ajax(request, pk):
     client = get_object_or_404(models.Client, pk=pk)
@@ -114,7 +113,6 @@ def client_detail_ajax(request, pk):
     })
 
 
-# Ajax: search clients by name/cin/tel
 @login_required(login_url='adminlogin')
 def client_search_ajax(request):
     q = request.GET.get('q', '')
@@ -127,7 +125,7 @@ def client_search_ajax(request):
     return JsonResponse({'results': results})
 
 
-# Legacy customer views (kept)
+# Legacy customer views
 @login_required(login_url='adminlogin')
 def admin_view_customer_view(request):
     customers = CMODEL.Customer.objects.all()
@@ -226,21 +224,31 @@ def admin_dossier_view(request):
 
 @login_required(login_url='adminlogin')
 def admin_add_dossier_view(request):
-    dossierForm = forms.DossierForm()
+    categories = models.Category.objects.all().order_by('code_categorie')
     clients = models.Client.objects.all().order_by('nom_complet')
+    dossierForm = forms.DossierForm()
+
     if request.method == 'POST':
         dossierForm = forms.DossierForm(request.POST)
         if dossierForm.is_valid():
             dossierForm.save()
             return redirect('admin-view-dossier')
-    return render(request, 'insurance/admin_add_dossier.html', {'dossierForm': dossierForm, 'clients': clients})
+
+    return render(request, 'insurance/admin_add_dossier.html', {
+        'dossierForm': dossierForm,
+        'clients': clients,
+        'categories': categories,
+    })
 
 
 @login_required(login_url='adminlogin')
 def admin_view_dossier_view(request):
     q = request.GET.get('q', '')
     status_filter = request.GET.get('status', '')
-    dossiers = models.Dossier.objects.select_related('client', 'vehicle', 'vehicle__categorie', 'agent_commercial').all()
+    cat_filter = request.GET.get('categorie', '')
+    dossiers = models.Dossier.objects.select_related(
+        'client', 'vehicle', 'categorie', 'agent_commercial'
+    ).all()
     if q:
         dossiers = dossiers.filter(
             Q(assure__icontains=q) | Q(numero_police__icontains=q) |
@@ -249,20 +257,35 @@ def admin_view_dossier_view(request):
         )
     if status_filter:
         dossiers = dossiers.filter(status=status_filter)
-    return render(request, 'insurance/admin_view_dossier.html', {'dossiers': dossiers, 'q': q, 'status_filter': status_filter})
+    if cat_filter:
+        dossiers = dossiers.filter(categorie_id=cat_filter)
+    categories = models.Category.objects.all()
+    return render(request, 'insurance/admin_view_dossier.html', {
+        'dossiers': dossiers,
+        'q': q,
+        'status_filter': status_filter,
+        'cat_filter': cat_filter,
+        'categories': categories,
+    })
 
 
 @login_required(login_url='adminlogin')
 def update_dossier_view(request, pk):
     dossier = get_object_or_404(models.Dossier, pk=pk)
-    dossierForm = forms.DossierForm(instance=dossier)
+    categories = models.Category.objects.all().order_by('code_categorie')
     clients = models.Client.objects.all().order_by('nom_complet')
+    dossierForm = forms.DossierForm(instance=dossier)
     if request.method == 'POST':
         dossierForm = forms.DossierForm(request.POST, instance=dossier)
         if dossierForm.is_valid():
             dossierForm.save()
             return redirect('admin-view-dossier')
-    return render(request, 'insurance/update_dossier.html', {'dossierForm': dossierForm, 'clients': clients})
+    return render(request, 'insurance/update_dossier.html', {
+        'dossierForm': dossierForm,
+        'clients': clients,
+        'categories': categories,
+        'dossier': dossier,
+    })
 
 
 @login_required(login_url='adminlogin')
@@ -282,7 +305,6 @@ def admin_add_vehicle_view(request):
         if vehicleForm.is_valid():
             vehicleForm.save()
             return redirect('admin-view-vehicle')
-        # form invalid — fall through and show errors
     return render(request, 'insurance/admin_add_vehicle.html', {'vehicleForm': vehicleForm})
 
 
